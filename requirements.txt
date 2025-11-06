@@ -1,0 +1,10 @@
+cairosvg
+fastapi
+fastapi-cli
+fastapi-cloud-cli
+fonttools
+jinja2
+python-multipart
+svgwrite
+uharfbuzz
+pillow

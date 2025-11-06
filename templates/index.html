@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>Aksara Nusantara Sticker Maker</title>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.png" />
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css" rel="stylesheet"/>
+    <style>
+        .page {
+            min-height: 100vh;
+        }
+        #sticker-preview-wrapper {
+            overflow-x: auto; 
+            max-width: 100%;
+            padding: 1rem 0;
+            display: flex;
+            justify-content: center;
+        }
+        #sticker-preview {
+            max-width: 100%; 
+            height: auto;
+            background-color: #f0f0f0; 
+            border: 1px dashed #ccc;
+            object-fit: contain; 
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="page">
+        <header class="navbar navbar-expand-md navbar-light d-print-none">
+            <div class="container-xl">
+                <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+                    <a href="/">
+                        <img src="/static/logo.png" height="28" />
+                        Aksara Nusantara Sticker Generator
+                    </a>
+                </h1>
+            </div>
+        </header>
+        <div class="page-wrapper">
+            <div class="page-body">
+                <div class="container-xl">
+                    <div class="row row-cards">
+                        
+                        <div class="col-lg-5">
+                            <form id="stickerForm" class="card" action="/generate_sticker" method="POST" enctype="multipart/form-data"> 
+                                <div class="card-header">
+                                    <h3 class="card-title">Sticker Settings</h3>
+                                </div>
+                                <div class="card-body">
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Image File (Optional)</label>
+                                        <input type="file" class="form-control" name="image_file" id="image_file" accept="image/*">
+                                        <small class="form-hint">Upload an image to combine with the text.</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label required">Latin Text Input</label>
+                                        <input type="text" class="form-control" name="text_input" id="text_input" value="" placeholder="{{ default_text }}" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label required">Target Script (Aksara)</label>
+                                        <select class="form-select" name="scheme_name" id="scheme_name" required>
+                                            {% for scheme in schemes %}
+                                                <option value="{{ scheme }}" {% if scheme == default_scheme %}selected{% endif %}>
+                                                    {{ scheme|capitalize }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Text/Image Combination Mode</label>
+                                        <div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="combine_mode" id="mode_only" value="text_only" checked>
+                                                <label class="form-check-label" for="mode_only">Text Only</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="combine_mode" id="mode_top" value="v_text_image">
+                                                <label class="form-check-label" for="mode_top">Text on Top</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="combine_mode" id="mode_bottom" value="v_image_text">
+                                                <label class="form-check-label" for="mode_bottom">Text on Bottom</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="combine_mode" id="mode_overlay" value="over">
+                                                <label class="form-check-label" for="mode_overlay">Overlay Center</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Scale Factor: <span id="scale_value">1.0</span>x</label>
+                                        <input type="range" class="form-range" name="scale_factor" id="scale_factor" value="1.0" min="0.5" max="3.0" step="0.1">
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Font Size (px)</label>
+                                            <input type="number" class="form-control" name="font_size" value="150" min="50" max="300">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Text Color</label>
+                                            <input type="color" class="form-control form-control-color" name="text_color" value="#000000">
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Border Size (px)</label>
+                                            <input type="number" class="form-control" name="border_size" value="12" min="0" max="30">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Shadow Blur</label>
+                                            <input type="number" class="form-control" name="shadow_blur" value="10" min="0" max="30">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer text-end">
+                                    <button type="submit" class="btn btn-primary" id="generateButton">
+                                        <div class="spinner-border spinner-border-sm me-2 d-none" role="status" id="loadingSpinner"></div>
+                                        Generate Sticker
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="col-lg-7">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h3 class="card-title">Sticker Preview</h3>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div class="alert alert-info d-none" id="errorAlert" role="alert"></div>
+                                    <div id="sticker-preview-wrapper">
+                                        <img id="sticker-preview" src="" alt="Generated Sticker Preview" class="img-fluid" style="display: none;">
+                                    </div>
+                                    <p id="initialMessage">Enter text and click 'Generate Sticker' to see the result!</p>
+                                    
+                                    <div id="downloadArea" class="mt-3" style="display: none;">
+                                        <h4 class="mb-3">Download Options:</h4>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-success" data-output-type="png_small">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-download"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 11l5 5l5 -5" /><path d="M12 4l0 12" /></svg>PNG (Small)
+                                            </button>
+                                            <button type="button" class="btn btn-primary mx-2" data-output-type="png_high">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-download"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 11l5 5l5 -5" /><path d="M12 4l0 12" /></svg>PNG (High-Res)
+                                            </button>
+                                            <button type="button" class="btn btn-secondary" data-output-type="svg" id="svg_button">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-download"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 11l5 5l5 -5" /><path d="M12 4l0 12" /></svg>SVG (Vector)
+                                            </button>
+                                        </div>
+                                        <a href="#" id="hiddenDownloadLink" download="aksara_sticker.png" style="display: none;"></a>
+                                    </div>
+                                    </div>
+                            </div>
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h3 class="card-title">Semacam Credits</h3>
+                                </div>
+                                <div class="card-body">
+                                    <p>Seluruh font aksara nusantara di ambil dari <a href="https://aksaradinusantara.com" target="_blank">Aksara di Nusantara</a></p>
+                                    <p>Terbikin oleh <a href="https://x.com/lantip" target="_blank">Lantip</a> yang githubnya di <a href="https://github.com/lantip" target="_blank">sini</a></p>                                    
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div><img src="/static/twit.png" /></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
+    <script>
+        const form = document.getElementById('stickerForm');
+        const preview = document.getElementById('sticker-preview');
+        const initialMessage = document.getElementById('initialMessage');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const generateButton = document.getElementById('generateButton');
+        const errorAlert = document.getElementById('errorAlert');
+        const downloadArea = document.getElementById('downloadArea');
+        const textInput = document.getElementById('text_input');
+        const downloadButtons = downloadArea.querySelectorAll('.btn');
+        const hiddenDownloadLink = document.getElementById('hiddenDownloadLink');
+        const scaleFactorSlider = document.getElementById('scale_factor');
+        const scaleValueDisplay = document.getElementById('scale_value');
+        const svgButton = document.getElementById('svg_button');
+        const combineModeRadios = document.querySelectorAll('input[name="combine_mode"]');
+
+        function slugify(text) {
+            return text.toString().toLowerCase()
+                .trim()
+                .replace(/\s+/g, '-')
+                .replace(/[^\w\-]+/g, '')
+                .replace(/\-\-+/g, '-')
+                .substring(0, 50);
+        }
+
+        function updateScaleDisplay() {
+            scaleValueDisplay.textContent = scaleFactorSlider.value;
+        }
+        
+        function updateUIVisibility() {
+            const selectedMode = document.querySelector('input[name="combine_mode"]:checked').value;
+            const isCombinedMode = selectedMode !== 'text_only' && document.getElementById('image_file').files.length > 0;
+            
+            svgButton.disabled = isCombinedMode;
+            
+            document.getElementById('scale_factor').closest('.mb-3').style.display = isCombinedMode ? 'block' : 'none';
+        }
+
+        scaleFactorSlider.addEventListener('input', updateScaleDisplay);
+        combineModeRadios.forEach(radio => radio.addEventListener('change', updateUIVisibility));
+        document.getElementById('image_file').addEventListener('change', updateUIVisibility);
+        
+        updateScaleDisplay();
+        updateUIVisibility();
+
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            loadingSpinner.classList.remove('d-none');
+            generateButton.disabled = true;
+            initialMessage.style.display = 'none';
+            preview.style.display = 'none';
+            errorAlert.classList.add('d-none');
+            downloadArea.style.display = 'none';
+            
+            const isCombined = document.querySelector('input[name="combine_mode"]:checked').value !== 'text_only' && document.getElementById('image_file').files.length > 0;
+            const previewOutputType = isCombined ? 'png_high' : 'png_small';
+
+            try {
+                const formData = new FormData(form);
+                const rawText = textInput.value;
+                const fileSlug = slugify(rawText);
+                
+                formData.append('output_type', previewOutputType); 
+
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    let errorDetail = "Unknown error occurred.";
+                    try {
+                        const errorJson = await response.json();
+                        errorDetail = errorJson.detail || errorDetail;
+                    } catch (e) {
+                        errorDetail = `HTTP Error: ${response.statusText}`;
+                    }
+                    throw new Error(errorDetail);
+                }
+
+                const imageBlob = await response.blob();
+                const imageObjectURL = URL.createObjectURL(imageBlob);
+                
+                preview.src = imageObjectURL;
+                preview.style.display = 'block';
+                
+                hiddenDownloadLink.href = imageObjectURL;
+                hiddenDownloadLink.download = `${fileSlug}_${previewOutputType.replace('_', '-')}.png`; 
+                
+                downloadArea.style.display = 'block';
+                updateUIVisibility(); 
+                
+
+            } catch (error) {
+                errorAlert.textContent = `Error: ${error.message}`;
+                errorAlert.classList.remove('d-none');
+                initialMessage.style.display = 'block';
+
+            } finally {
+                loadingSpinner.classList.add('d-none');
+                generateButton.disabled = false;
+            }
+        });
+
+        downloadButtons.forEach(button => {
+            button.addEventListener('click', async function(e) {
+                const outputType = this.getAttribute('data-output-type');
+                
+                if (outputType === 'svg' && this.disabled) return;
+                                
+                const formData = new FormData(form);
+                formData.append('output_type', outputType);
+
+                downloadButtons.forEach(b => b.disabled = true);
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) throw new Error("Failed to generate file.");
+                    
+                    const fileBlob = await response.blob();
+                    
+                    const rawText = textInput.value;
+                    const fileSlug = slugify(rawText);
+                    
+                    let fileExt = outputType.includes('png') ? 'png' : 'svg';
+                    
+                    const fileObjectURL = URL.createObjectURL(fileBlob);
+                    
+                    hiddenDownloadLink.href = fileObjectURL;
+                    hiddenDownloadLink.download = `${fileSlug}_${outputType.replace('_', '-')}.${fileExt}`;
+                    
+                    hiddenDownloadLink.click();
+
+                } catch (error) {
+                    errorAlert.textContent = `Error downloading ${outputType}: ${error.message}`;
+                    errorAlert.classList.remove('d-none');
+                } finally {
+                    downloadButtons.forEach(b => b.disabled = false);
+                    updateUIVisibility();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

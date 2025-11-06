@@ -1,0 +1,17 @@
+.bak/*
+logs/*
+my.cnf
+**/__pycache__/
+*.pyc
+.DS_Store
+media/
+assets/
+*.bak
+local_settings.py
+.env
+.local
+.ori
+instance/
+previews/
+Pipfile
+temp_uploads/
