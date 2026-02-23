@@ -11,13 +11,14 @@ from PIL import Image
 BASE_DIR = Path(__file__).resolve().parent
 
 FONT_MAP = {
-    "bali": BASE_DIR / "static/font/bali__vimala.ttf",
-    "batak": BASE_DIR / "static/font/batak__Batak-Unicode-Regular Final.otf",
-    "jawa": BASE_DIR / "static/font/jawa__nyk Ngayogyan New Italic.ttf",
-    "kawi": BASE_DIR / "static/font/kawi__Kawi Roman.ttf",
-    "pegon": BASE_DIR / "static/font/pegon__JAWI-Readex Pro-biasa.ttf",
-    "rejang": BASE_DIR / "static/font/rejang__NotoRejang.ttf",
-    "sunda": BASE_DIR / "static/font/sunda__AwiGombong.ttf",
+    "bali": BASE_DIR / "static/font/bali__Patra_Bali.ttf",
+    "batak": BASE_DIR / "static/font/batak__Batak-Unicode-Regular_Final.ttf",
+    "jawa": BASE_DIR / "static/font/jawa__nyk_Ngayogyan_Jejeg.ttf",
+    "kawi": BASE_DIR / "static/font/kawi_AP_Kawi_Roman.ttf",
+    "lontara": BASE_DIR / "static/font/lontara__kuruxsumaqfx.ttf",
+    "pegon": BASE_DIR / "static/notofont/pegon__JAWI-Readex Pro-biasa.ttf",
+    "rejang": BASE_DIR / "static/font/rejang__LXTanjungTanah.otf",
+    "sunda": BASE_DIR / "static/notofont/NotoSansSundanese-Regular.ttf",
 }
 
 SCHEMES = sorted(FONT_MAP.keys())

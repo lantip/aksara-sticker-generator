@@ -15,3 +15,4 @@ instance/
 previews/
 Pipfile
 temp_uploads/
+.venv/
